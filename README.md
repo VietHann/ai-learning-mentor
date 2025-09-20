@@ -1,8 +1,8 @@
-# 🎓 AI Virtual Mentor - Hệ thống Gia sư Thông minh Toàn diện cho Giáo dục CNTT
+# 🎓 AI Virtual Mentor - Hệ thống hỗ trợ học tập cho sinh viên
 
 ## Tổng quan
 
-**AI Virtual Mentor** là hệ thống gia sư thông minh toàn diện dành cho sinh viên Công nghệ Thông tin, được thiết kế với **kiến trúc giao diện kép** bao gồm cả ứng dụng web **Streamlit** và **Flask**. Hệ thống sử dụng **Retrieval-Augmented Generation (RAG)** với **Gemini AI** để cung cấp hỗ trợ học tập chính xác, có trích dẫn và tuân thủ nguyên tắc học tập trung thực.
+**AI Virtual Mentor** là hệ thống gia sư thông minh toàn diện dành cho sinh viên. Hệ thống sử dụng **Retrieval-Augmented Generation (RAG)** với **Gemini AI** để cung cấp hỗ trợ học tập chính xác, có trích dẫn và tuân thủ nguyên tắc học tập trung thực.
 
 ### Tổng quan Kiến trúc
 
@@ -23,7 +23,7 @@ AI Virtual Mentor/
 
 ## Thiết kế Giao diện Kép
 
-### 🖥Ứng dụng Web Flask (`apps/flask/`)
+### Ứng dụng Web Flask (`apps/flask/`)
 **Giao diện web hiện đại, chuyên nghiệp** với thiết kế responsive:
 
 **Tính năng chính:**
