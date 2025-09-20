@@ -1,0 +1,4 @@
+apps/streamlit/
+venv/
+/README.md
+/apps/flask/README.md

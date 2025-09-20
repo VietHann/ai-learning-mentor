@@ -1,0 +1,154 @@
+{
+  "metadata": {
+    "dataset_name": "AI Virtual Mentor - Golden Q&A",
+    "description": "Curated question-answer pairs for CS education evaluation",
+    "version": "1.0",
+    "created_date": "2025-09-20",
+    "language": "Vietnamese/English",
+    "total_questions": 25
+  },
+  "categories": {
+    "theory_explanation": {
+      "description": "Theoretical computer science concepts",
+      "questions": [
+        {
+          "id": "theory_001",
+          "question": "Machine Learning là gì và có những loại chính nào?",
+          "expected_answer": "Machine Learning là một phần của Artificial Intelligence cho phép máy tính học từ dữ liệu mà không cần lập trình cụ thể. Ba loại chính gồm: (1) Supervised Learning - học từ dữ liệu có nhãn, (2) Unsupervised Learning - tìm patterns từ dữ liệu không nhãn, (3) Reinforcement Learning - học thông qua reward/punishment.",
+          "difficulty": "intermediate",
+          "topics": ["machine_learning", "ai", "classification"],
+          "context_requirements": ["ml_fundamentals", "ai_concepts"]
+        },
+        {
+          "id": "theory_002", 
+          "question": "Explain the difference between TCP and UDP protocols",
+          "expected_answer": "TCP (Transmission Control Protocol) is connection-oriented, reliable, ensures data delivery and order but with higher overhead. UDP (User Datagram Protocol) is connectionless, faster, lower overhead but no delivery guarantee. TCP is used for web browsing, email; UDP for streaming, gaming.",
+          "difficulty": "intermediate",
+          "topics": ["networking", "protocols", "tcp", "udp"],
+          "context_requirements": ["network_programming", "protocols"]
+        },
+        {
+          "id": "theory_003",
+          "question": "Multithreading trong Java hoạt động như thế nào?",
+          "expected_answer": "Multithreading trong Java cho phép chạy nhiều threads đồng thời trong một process. Thread được tạo bằng cách extend Thread class hoặc implement Runnable interface. Java cung cấp synchronization mechanisms như synchronized keyword, locks để tránh race conditions và deadlocks.",
+          "difficulty": "advanced",
+          "topics": ["java", "multithreading", "concurrency"],
+          "context_requirements": ["java_programming", "thread_management"]
+        }
+      ]
+    },
+    "code_debugging": {
+      "description": "Code debugging and problem-solving",
+      "questions": [
+        {
+          "id": "debug_001",
+          "question": "Tại sao code này gây ra NullPointerException: String str = null; int length = str.length();",
+          "expected_answer": "NullPointerException xảy ra vì biến 'str' được gán giá trị null, và khi gọi method length() trên object null sẽ throw exception này. Cách fix: kiểm tra null trước khi gọi method: if (str != null) { int length = str.length(); } hoặc sử dụng Optional.",
+          "difficulty": "beginner",
+          "topics": ["java", "exceptions", "null_handling"],
+          "context_requirements": ["java_basics", "exception_handling"]
+        },
+        {
+          "id": "debug_002",
+          "question": "Why is this Socket connection failing in network programming?",
+          "expected_answer": "Socket connection failures can occur due to: (1) Server not listening on specified port, (2) Firewall blocking connection, (3) Incorrect IP address/hostname, (4) Network connectivity issues, (5) Server overloaded. Debug by checking server status, verifying network connectivity, testing with telnet, and checking firewall settings.",
+          "difficulty": "intermediate",
+          "topics": ["networking", "sockets", "debugging"],
+          "context_requirements": ["network_programming", "socket_programming"]
+        }
+      ]
+    },
+    "exercise": {
+      "description": "Programming exercises and implementation questions",
+      "questions": [
+        {
+          "id": "exercise_001",
+          "question": "Implement a binary search algorithm in Java",
+          "expected_answer": "Binary search requires sorted array. Algorithm: compare target with middle element, if equal return index, if target smaller search left half, if larger search right half. Time complexity O(log n).",
+          "difficulty": "intermediate",
+          "topics": ["algorithms", "binary_search", "java"],
+          "context_requirements": ["algorithm_fundamentals", "java_programming"],
+          "integrity_mode_variations": {
+            "normal": "Provide complete implementation with code",
+            "academic": "Explain algorithm steps and pseudocode only",
+            "exam": "Conceptual explanation only, no implementation details"
+          }
+        },
+        {
+          "id": "exercise_002",
+          "question": "Tạo một TCP Server đơn giản trong Java",
+          "expected_answer": "TCP Server cần: (1) Tạo ServerSocket với port, (2) Lắng nghe client bằng accept(), (3) Xử lý kết nối với Socket object, (4) Đọc/ghi dữ liệu qua streams, (5) Đóng connections. Cần handle exceptions và implement multithreading cho multiple clients.",
+          "difficulty": "advanced",
+          "topics": ["java", "networking", "tcp", "server"],
+          "context_requirements": ["network_programming", "java_sockets"],
+          "integrity_mode_variations": {
+            "normal": "Provide complete server implementation",
+            "academic": "Outline server structure and key methods",
+            "exam": "Explain server concepts and architecture only"
+          }
+        }
+      ]
+    },
+    "definition": {
+      "description": "Technical definitions and concept explanations",
+      "questions": [
+        {
+          "id": "definition_001",
+          "question": "RMI trong Java là gì?",
+          "expected_answer": "RMI (Remote Method Invocation) là kỹ thuật cho phép gọi methods của object từ xa như thể chúng ở local. RMI bao gồm: Registry để đăng ký services, Stub (client proxy), Skeleton (server proxy). Được sử dụng để xây dựng distributed applications trong Java.",
+          "difficulty": "advanced",
+          "topics": ["java", "rmi", "distributed_systems"],
+          "context_requirements": ["distributed_programming", "java_rmi"]
+        },
+        {
+          "id": "definition_002",
+          "question": "What is Object Serialization in network programming?",
+          "expected_answer": "Object Serialization is the process of converting an object's state into a byte stream for storage or transmission. In network programming, it enables sending complex objects over network. Java uses Serializable interface. Important for RMI, distributed systems, and data persistence.",
+          "difficulty": "intermediate", 
+          "topics": ["serialization", "networking", "java"],
+          "context_requirements": ["object_serialization", "network_programming"]
+        }
+      ]
+    }
+  },
+  "contextual_scenarios": {
+    "insufficient_context": [
+      {
+        "id": "context_001",
+        "question": "Explain advanced quantum computing algorithms in detail",
+        "expected_behavior": "Should detect insufficient context and request more specific information or additional documents",
+        "context_available": [],
+        "expected_response_type": "insufficient_context_warning"
+      }
+    ],
+    "integrity_mode_testing": [
+      {
+        "id": "integrity_001",
+        "question": "Write complete code for sorting algorithms",
+        "modes": {
+          "normal": "Should provide complete implementation",
+          "academic": "Should provide pseudocode and guidance only",
+          "exam": "Should provide conceptual explanation only"
+        }
+      }
+    ]
+  },
+  "quality_benchmarks": {
+    "citation_accuracy": {
+      "requirement": "All responses must include specific page numbers, sections, or source references",
+      "measurement": "Percentage of responses with proper citations"
+    },
+    "response_relevance": {
+      "requirement": "Responses should directly address the question asked",
+      "measurement": "Semantic similarity score >= 0.8"
+    },
+    "language_consistency": {
+      "requirement": "Responses should match question language (Vietnamese/English)",
+      "measurement": "Language detection accuracy >= 95%"
+    },
+    "integrity_mode_compliance": {
+      "requirement": "Responses must respect academic integrity settings",
+      "measurement": "Mode-specific content restrictions enforced"
+    }
+  }
+}
