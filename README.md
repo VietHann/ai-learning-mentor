@@ -182,20 +182,71 @@ python evaluation/ab_testing.py
 - **UI Tests**: Tương tác giao diện với Playwright
 - **Evaluation Tests**: Số liệu chất lượng học thuật
 
-### Tiêu chuẩn Code
-- **Type Hints**: Typing đầy đủ cho tất cả functions
-- **Docstrings**: Tài liệu toàn diện
-- **Xử lý Lỗi**: Degradation nhẹ nhàng
-- **Bảo mật**: Xác thực input và xử lý tệp an toàn
+### 📝 Code Standards
+- **Type Hints**: Full typing cho all functions
+- **Docstrings**: Comprehensive documentation
+- **Error Handling**: Graceful degradation
+- **Security**: Input validation và safe file handling
 
-## Đóng góp
+## 🔮 Roadmap
 
-### Quy trình phát triển
-1. **Fork Repository**: Tạo nhánh tính năng của bạn
-2. **Tuân theo Tiêu chuẩn**: Code style, kiểm tra, tài liệu
-3. **Thêm Tests**: Coverage unit và integration
-4. **Cập nhật Docs**: README và tài liệu inline
-5. **Gửi PR**: Mô tả chi tiết với kết quả test
+### Version 2.0 (Planning)
+- [ ] **Multi-modal RAG**: Image và diagram processing
+- [ ] **Advanced Analytics**: Learning pattern analysis
+- [ ] **Collaborative Features**: Document sharing
+- [ ] **Mobile Apps**: React Native interfaces
 
-**Cập nhật lần cuối**: Tháng 9 năm 2025  
-**Phiên bản**: 0.0.1  
+### Technology Upgrades  
+- [ ] **Latest Embeddings**: Upgrade to newest multilingual models
+- [ ] **Local LLM Support**: Self-hosted alternatives
+- [ ] **Graph RAG**: Knowledge graph enhancements
+- [ ] **Microservices**: Scalable architecture
+
+## 🤝 Contributing
+
+### Development Process
+1. **Fork Repository**: Create your feature branch
+2. **Follow Standards**: Code style, testing, documentation
+3. **Add Tests**: Unit và integration coverage
+4. **Update Docs**: README và inline documentation
+5. **Submit PR**: Detailed description với test results
+
+### 🐛 Bug Reports
+- Use GitHub Issues với detailed reproduction steps
+- Include system info, error logs, và expected behavior
+- Add labels cho priority và component affected
+
+## 📄 License & Academic Use
+
+**Educational License**: Designed cho academic environments với respect for institutional policies. Commercial use requires permission.
+
+### 🎓 Academic Guidelines
+- **Cite Sources**: Always attribute AI assistance in assignments
+- **Follow Policies**: Respect your institution's academic integrity rules
+- **Use Responsibly**: Tool for learning enhancement, not replacement
+- **Report Issues**: Help improve educational AI safety
+
+## 📞 Support & Community
+
+- **Documentation**: Comprehensive guides trong repo wiki
+- **Issues**: GitHub Issues cho bug reports và feature requests  
+- **Discussions**: Community forum cho usage questions
+- **Updates**: Follow releases cho latest improvements
+
+---
+
+## 🙏 Acknowledgments
+
+- **Google AI**: Gemini API cho intelligent responses
+- **Streamlit Team**: Excellent data app framework
+- **Flask Community**: Robust web development tools
+- **Open Source**: Sentence Transformers, Qdrant, và supporting libraries
+- **Educational Community**: Feedback và testing từ students và educators
+
+---
+
+**🎯 Built with ❤️ for Vietnamese Computer Science Education**
+
+**📅 Last Updated**: September 2025  
+**🔖 Version**: 2.0.0  
+**✅ Status**: Production Ready với Dual Interface Support
