@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-RAGAS-style Evaluation Framework for AI Virtual Mentor
-Implements RAG evaluation metrics without external dependencies
-"""
-
 import json
 import math
 import re

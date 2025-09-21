@@ -1,10 +1,3 @@
-"""
-AI Virtual Mentor Core Package
-
-This package contains the core logic for the AI Virtual Mentor system,
-including document processing, embeddings, vector search, and AI integration.
-"""
-
 from .document_processor import DocumentProcessor
 from .embeddings import EmbeddingGenerator
 from .vector_search import VectorSearch

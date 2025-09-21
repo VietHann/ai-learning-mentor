@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-BGE Reranker implementation for enhanced search result ranking
-"""
-
 import os
 import numpy as np
 from typing import List, Dict, Any, Optional, Tuple

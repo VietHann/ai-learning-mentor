@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if mode == 'register' %}Đăng Ký - {% else %}Đăng Nhập - {% endif %}Trợ Lý AI Thông Minh</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient);
+        }
+        
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem;
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .auth-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .auth-header p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .auth-button {
+            width: 100%;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        
+        .auth-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .auth-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .auth-switch a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>{% if mode == 'register' %}Tạo Tài Khoản{% else %}Chào Mừng Trở Lại{% endif %}</h1>
+                <p>{% if mode == 'register' %}Tham gia Trợ Lý AI để học Công nghệ Thông tin cá nhân hóa{% else %}Đăng nhập để tiếp tục hành trình học tập{% endif %}</p>
+            </div>
+            
+            <div id="message-container"></div>
+            
+            <form id="auth-form">
+                {% if mode == 'register' %}
+                <div class="form-group">
+                    <label for="full_name">Họ và Tên</label>
+                    <input type="text" id="full_name" name="full_name" placeholder="Nhập họ và tên của bạn">
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">Tên Đăng Nhập</label>
+                    <input type="text" id="username" name="username" placeholder="Chọn tên đăng nhập" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Nhập địa chỉ email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="major">Ngành Học</label>
+                    <input type="text" id="major" name="major" placeholder="VD: Công nghệ Thông tin">
+                </div>
+                {% else %}
+                <div class="form-group">
+                    <label for="username">Tên Đăng Nhập hoặc Email</label>
+                    <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập hoặc email" required>
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="password">Mật Khẩu</label>
+                    <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
+                </div>
+                
+                {% if mode == 'login' %}
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="remember" name="remember"> Ghi nhớ đăng nhập
+                    </label>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="auth-button" id="auth-submit">
+                    <span class="loading-spinner" id="loading-spinner"></span>
+                    {% if mode == 'register' %}Tạo Tài Khoản{% else %}Đăng Nhập{% endif %}
+                </button>
+            </form>
+            
+            <div class="auth-switch">
+                {% if mode == 'register' %}
+                <p>Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a></p>
+                {% else %}
+                <p>Chưa có tài khoản? <a href="{{ url_for('register') }}">Tạo tài khoản</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('auth-form');
+            const submitBtn = document.getElementById('auth-submit');
+            const spinner = document.getElementById('loading-spinner');
+            const messageContainer = document.getElementById('message-container');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                spinner.style.display = 'inline-block';
+                messageContainer.innerHTML = '';
+                
+                // Gather form data
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Convert checkbox to boolean
+                if (data.remember !== undefined) {
+                    data.remember = true;
+                }
+                
+                try {
+                    const response = await fetch(window.location.pathname, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        showMessage(result.error, 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    showMessage('Lỗi kết nối. Vui lòng thử lại.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    spinner.style.display = 'none';
+                }
+            });
+            
+            function showMessage(message, type) {
+                const className = type === 'success' ? 'success-message' : 'error-message';
+                messageContainer.innerHTML = `<div class="${className}">${message}</div>`;
+                
+                // Auto-hide success messages
+                if (type === 'success') {
+                    setTimeout(() => {
+                        messageContainer.innerHTML = '';
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,11 +1,18 @@
 import os
 import json
 import uuid
+import hashlib
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, send_from_directory, redirect, url_for, flash
 from flask_cors import CORS
 from flask_session import Session
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+
+# Add parent directory to path for mentor_core imports
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
 # Import core components
 from mentor_core.document_processor import DocumentProcessor
@@ -15,11 +22,20 @@ from mentor_core.gemini_client import GeminiClient
 from mentor_core.question_classifier import QuestionClassifier
 from mentor_core.citation_formatter import CitationFormatter
 
+# Import database models
+from models import db, bcrypt, User, ChatSession, UserDocument
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app, origins="*", allow_headers="*", methods="*")
 
-# Configure Flask session
+# Configure Flask app
 app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'ai-virtual-mentor-2025')
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///ai_virtual_mentor.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Session configuration
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
@@ -28,8 +44,21 @@ app.config['SESSION_FILE_THRESHOLD'] = 500
 app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
-# Initialize session
+# Initialize extensions
+db.init_app(app)
+bcrypt.init_app(app)
 Session(app)
+
+# Initialize login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Global components
 components = None
@@ -76,52 +105,106 @@ def initialize_components():
         return None
 
 def initialize_session():
-    """Initialize comprehensive session state"""
+    """Initialize session state based on authentication status"""
     
-    if 'conversation_history' not in session:
-        session['conversation_history'] = []
-    if 'documents_processed' not in session:
-        session['documents_processed'] = []
-    if 'embeddings_ready' not in session:
-        session['embeddings_ready'] = False
-    if 'academic_mode' not in session:
-        session['academic_mode'] = True
-    if 'integrity_mode' not in session:
-        session['integrity_mode'] = "academic"
+    if current_user.is_authenticated:
+        # For authenticated users, load from database
+        if 'user_session_id' not in session:
+            session['user_session_id'] = get_user_session_id()
+        
+        # Load user profile from database
+        session['user_profile'] = current_user.get_profile_dict()
+        
+        # Load user documents
+        user_docs = UserDocument.query.filter_by(user_id=current_user.id).all()
+        session['documents_processed'] = [doc.get_dict() for doc in user_docs]
+        
+        # Load conversation history (recent sessions)
+        recent_chats = ChatSession.query.filter_by(
+            user_id=current_user.id
+        ).order_by(ChatSession.created_at.desc()).limit(50).all()
+        
+        session['conversation_history'] = [chat.get_dict() for chat in recent_chats]
+        
+        # Set authenticated user embeddings ready if they have documents
+        session['embeddings_ready'] = len(user_docs) > 0
     
-    # Enhanced User Profile System
-    if 'user_profile' not in session:
-        session['user_profile'] = {
-            'name': '',
-            'student_id': '',
-            'major': 'Công nghệ Thông tin',
-            'year': 'Năm 2',
-            'level': 'Trung bình',
-            'preferred_language': 'Vietnamese',
-            'learning_goals': [],
-            'favorite_topics': [],
-            'created_at': datetime.now().isoformat()
-        }
+    else:
+        # For anonymous users, use legacy session system
+        if 'conversation_history' not in session:
+            session['conversation_history'] = []
+        if 'documents_processed' not in session:
+            session['documents_processed'] = []
+        if 'user_profile' not in session:
+            session['user_profile'] = {
+                'name': '',
+                'email': '',
+                'major': '',
+                'academic_year': '',
+                'preferred_language': 'Vietnamese'
+            }
+        if 'embeddings_ready' not in session:
+            session['embeddings_ready'] = False
+        if 'academic_mode' not in session:
+            session['academic_mode'] = True
     
-    # Session analytics and learning tracking
+    # Initialize session analytics and conversation context for all users
     if 'session_analytics' not in session:
-        session['session_analytics'] = {
-            'questions_asked': 0,
-            'topics_explored': [],
-            'session_start': datetime.now().isoformat(),
-            'total_responses': 0,
-            'question_types_count': {},
-            'average_response_time': 0.0
-        }
+        if current_user.is_authenticated:
+            # Calculate analytics from database for authenticated users
+            total_chats = ChatSession.query.filter_by(user_id=current_user.id).count()
+            unique_topics = db.session.query(ChatSession.question_type).filter_by(
+                user_id=current_user.id
+            ).distinct().all()
+            topics_list = [topic[0] for topic in unique_topics if topic[0]]
+            
+            session['session_analytics'] = {
+                'questions_asked': total_chats,
+                'total_responses': total_chats,
+                'topics_explored': topics_list,
+                'documents_uploaded': len(session.get('documents_processed', [])),
+                'question_types_count': {},
+                'average_response_time': 0.0,
+                'session_start': datetime.utcnow().isoformat()
+            }
+        else:
+            # Default analytics for anonymous users
+            session['session_analytics'] = {
+                'questions_asked': 0,
+                'total_responses': 0,
+                'topics_explored': [],
+                'documents_uploaded': 0,
+                'question_types_count': {},
+                'average_response_time': 0.0,
+                'session_start': datetime.utcnow().isoformat()
+            }
     
-    # Enhanced conversation context
     if 'conversation_context' not in session:
         session['conversation_context'] = {
-            'current_topic': None,
-            'context_documents': [],
-            'learning_path': [],
+            'current_topic': '',
             'follow_up_suggestions': []
         }
+
+def get_user_session_id():
+    """Get user-specific session ID"""
+    if current_user.is_authenticated:
+        return f"user_{current_user.id}"
+    else:
+        if 'anonymous_session_id' not in session:
+            session['anonymous_session_id'] = str(uuid.uuid4())
+        return f"anonymous_{session['anonymous_session_id']}"
+
+def create_tables():
+    """Create database tables"""
+    with app.app_context():
+        try:
+            db.create_all()
+            print("✅ Database tables created successfully")
+        except Exception as e:
+            print(f"❌ Error creating database tables: {str(e)}")
+
+# Initialize database tables on startup
+create_tables()
 
 def generate_follow_up_suggestions(question_type: str, question: str) -> List[str]:
     """Generate contextual follow-up suggestions based on question type"""
@@ -150,9 +233,112 @@ def generate_follow_up_suggestions(question_type: str, question: str) -> List[st
     
     return suggestions_map.get(question_type, ["Chủ đề liên quan", "Khái niệm mở rộng"])
 
+# Authentication routes
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """User registration"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        full_name = data.get('full_name', '').strip()
+        major = data.get('major', '').strip()
+        
+        # Validation
+        if not all([username, email, password]):
+            return jsonify({'success': False, 'error': 'All fields are required'}), 400
+        
+        if len(password) < 6:
+            return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+        
+        if not User.validate_email(email):
+            return jsonify({'success': False, 'error': 'Invalid email format'}), 400
+        
+        # Check for existing user
+        if User.query.filter_by(username=username).first():
+            return jsonify({'success': False, 'error': 'Username already exists'}), 400
+        
+        if User.query.filter_by(email=email).first():
+            return jsonify({'success': False, 'error': 'Email already registered'}), 400
+        
+        try:
+            # Create new user
+            user = User(username=username, email=email, full_name=full_name, major=major)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            
+            # Auto login after registration
+            login_user(user, remember=True)
+            
+            return jsonify({
+                'success': True,
+                'message': 'Registration successful',
+                'user': user.get_profile_dict()
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'error': f'Registration failed: {str(e)}'}), 500
+    
+    return render_template('auth.html', mode='register')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """User login"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form
+        username_or_email = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        remember_me = data.get('remember', False)
+        
+        if not all([username_or_email, password]):
+            return jsonify({'success': False, 'error': 'Username/email and password are required'}), 400
+        
+        # Find user by username or email
+        user = User.query.filter(
+            (User.username == username_or_email) | (User.email == username_or_email)
+        ).first()
+        
+        if user and user.check_password(password):
+            # Update last login
+            user.last_login = datetime.utcnow()
+            db.session.commit()
+            
+            # Login user
+            login_user(user, remember=remember_me)
+            
+            return jsonify({
+                'success': True,
+                'message': 'Login successful',
+                'user': user.get_profile_dict()
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+    
+    return render_template('auth.html', mode='login')
+
+@app.route('/logout')
+@login_required
+def logout():
+    """User logout"""
+    logout_user()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('login'))
+
 @app.route('/')
 def index():
     """Main application page"""
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+    
     initialize_session()
     return render_template('index.html')
 
@@ -166,46 +352,64 @@ def api_status():
     })
 
 @app.route('/api/documents')
+@login_required
 def api_documents():
-    """Get list of processed documents"""
+    """Get list of processed documents (user-specific)"""
     initialize_session()
     
+    # Get documents from database for current user only
+    user_docs = UserDocument.query.filter_by(user_id=current_user.id).all()
+    documents = [doc.get_dict() for doc in user_docs]
+    
     return jsonify({
-        'documents': session['documents_processed'],
-        'count': len(session['documents_processed'])
+        'documents': documents,
+        'count': len(documents)
     })
 
 @app.route('/api/profile', methods=['GET', 'POST'])
+@login_required
 def api_profile():
-    """User profile management"""
+    """User profile management (user-specific)"""
     initialize_session()
     
     if request.method == 'GET':
+        # Calculate analytics from database
+        total_chats = ChatSession.query.filter_by(user_id=current_user.id).count()
+        unique_topics = db.session.query(ChatSession.question_type).filter_by(
+            user_id=current_user.id
+        ).distinct().count()
+        
         return jsonify({
-            'profile': session['user_profile'],
+            'profile': current_user.get_profile_dict(),
             'analytics': {
-                'questions_asked': session['session_analytics']['questions_asked'],
-                'topics_explored': len(set(session['session_analytics']['topics_explored'])),
-                'total_responses': session['session_analytics']['total_responses']
+                'questions_asked': total_chats,
+                'topics_explored': unique_topics,
+                'total_responses': total_chats,
+                'documents_uploaded': UserDocument.query.filter_by(user_id=current_user.id).count()
             }
         })
     
     elif request.method == 'POST':
         data = request.get_json()
         
-        # Update user profile
+        # Update user profile in database
         if 'profile' in data:
-            session['user_profile'].update(data['profile'])
+            current_user.update_profile(data['profile'])
+            db.session.commit()
+            
+            # Update session cache
+            session['user_profile'] = current_user.get_profile_dict()
             session.permanent = True
         
         return jsonify({
             'success': True,
-            'profile': session['user_profile']
+            'profile': current_user.get_profile_dict()
         })
 
 @app.route('/api/upload', methods=['POST'])
+@login_required
 def api_upload():
-    """Document upload and processing"""
+    """Document upload and processing (user-specific)"""
     initialize_session()
     
     if not components:
@@ -225,9 +429,24 @@ def api_upload():
         vector_search = components['vector_search']
         
         processed_docs = []
+        saved_documents = []
         
         for file in files:
             if file.filename:
+                # Create file hash for deduplication
+                file_content = file.read()
+                file_hash = hashlib.sha256(file_content).hexdigest()
+                file.seek(0)  # Reset file pointer
+                
+                # Check if user already has this document
+                existing_doc = UserDocument.query.filter_by(
+                    user_id=current_user.id,
+                    file_hash=file_hash
+                ).first()
+                
+                if existing_doc:
+                    continue  # Skip duplicate files
+                
                 # Save uploaded file temporarily
                 temp_path = f"temp_{uuid.uuid4()}_{file.filename}"
                 file.save(temp_path)
@@ -235,17 +454,43 @@ def api_upload():
                 try:
                     # Process the document
                     docs = doc_processor.process_documents([temp_path])
-                    processed_docs.extend(docs)
                     
-                    # Check for duplicates before adding to session tracking
-                    existing_docs = [doc['name'] for doc in session['documents_processed']]
-                    if file.filename not in existing_docs:
-                        session['documents_processed'].append({
-                            'name': file.filename,
-                            'type': file.filename.split('.')[-1].upper(),
-                            'chunks': len(docs),
-                            'processed_at': datetime.now().isoformat()
-                        })
+                    if docs:
+                        # Create user document record
+                        user_doc = UserDocument(
+                            user_id=current_user.id,
+                            filename=f"user_{current_user.id}_{file.filename}",
+                            original_filename=file.filename,
+                            file_type=file.filename.split('.')[-1].upper(),
+                            file_size=len(file_content),
+                            file_hash=file_hash,
+                            chunks_count=len(docs),
+                            processing_status='processed',
+                            processed_at=datetime.utcnow()
+                        )
+                        db.session.add(user_doc)
+                        
+                        # Tag documents with user ID for vector search isolation
+                        for doc in docs:
+                            doc['user_id'] = current_user.id
+                            doc['document_id'] = user_doc.id
+                        
+                        processed_docs.extend(docs)
+                        saved_documents.append(user_doc)
+                    
+                except Exception as doc_error:
+                    # Mark document as error in database
+                    user_doc = UserDocument(
+                        user_id=current_user.id,
+                        filename=f"user_{current_user.id}_{file.filename}",
+                        original_filename=file.filename,
+                        file_type=file.filename.split('.')[-1].upper(),
+                        file_size=len(file_content),
+                        file_hash=file_hash,
+                        processing_status='error',
+                        error_message=str(doc_error)
+                    )
+                    db.session.add(user_doc)
                     
                 finally:
                     # Clean up temporary file
@@ -256,19 +501,28 @@ def api_upload():
             # Generate embeddings from full documents 
             embeddings = embedding_gen.generate_embeddings(processed_docs)
             
-            # Add documents to vector search with embeddings
+            # Add user-specific documents to vector search
             vector_search.add_documents(processed_docs, embeddings)
             
             session['embeddings_ready'] = True
             session.permanent = True
         
+        # Commit all document records
+        db.session.commit()
+        
+        # Update session with user documents
+        user_docs = UserDocument.query.filter_by(user_id=current_user.id).all()
+        session['documents_processed'] = [doc.get_dict() for doc in user_docs]
+        
         return jsonify({
             'success': True,
             'processed_count': len(processed_docs),
-            'documents': session['documents_processed']
+            'documents': session['documents_processed'],
+            'new_documents': len(saved_documents)
         })
         
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': f'Processing error: {str(e)}'}), 500
 
 @app.route('/api/ask', methods=['POST'])
@@ -388,13 +642,21 @@ def api_ask():
         return jsonify({'error': f'Error generating response: {str(e)}'}), 500
 
 @app.route('/api/conversation')
+@login_required
 def api_conversation():
-    """Get conversation history"""
+    """Get conversation history (user-specific)"""
     initialize_session()
     
+    # Get recent chat sessions for current user
+    recent_chats = ChatSession.query.filter_by(
+        user_id=current_user.id
+    ).order_by(ChatSession.created_at.desc()).limit(50).all()
+    
+    conversation_history = [chat.get_dict() for chat in recent_chats]
+    
     return jsonify({
-        'history': session['conversation_history'],
-        'context': session['conversation_context']
+        'history': conversation_history,
+        'context': session.get('conversation_context', {})
     })
 
 @app.route('/api/settings', methods=['GET', 'POST'])

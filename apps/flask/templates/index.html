@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎓 Trợ Lý Ảo AI cho Sinh viên CNTT</title>
+    <title>🎓 Trợ Lý AI - Hệ Thống Gia Sư Thông Minh</title>
     
     <!-- CSS Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -21,11 +21,19 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <h1 class="logo">
-                    <i class="fas fa-graduation-cap"></i>
-                    Mentor
-                </h1>
-                <p class="tagline">Hệ thống gia sư thông minh cho sinh viên CNTT</p>
+                <div class="header-left">
+                    <h1 class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        Trợ Lý AI Thông Minh
+                    </h1>
+                    <p class="tagline">Hệ thống gia sư thông minh cho sinh viên Công nghệ Thông tin</p>
+                </div>
+                <div class="user-actions">
+                    <span class="welcome-user">Xin chào, <strong id="current-username">{{ current_user.full_name or current_user.username }}</strong>!</span>
+                    <a href="/logout" class="btn btn-outline btn-sm logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </a>
+                </div>
             </div>
             <div class="header-stats">
                 <div class="stat">
@@ -53,33 +61,33 @@
         <aside class="sidebar">
             <!-- User Profile Section -->
             <div class="profile-section">
-                <h3><i class="fas fa-user"></i> Hồ sơ người dùng</h3>
+                <h3><i class="fas fa-user"></i> Thông Tin Cá Nhân</h3>
                 <div class="profile-info" id="profile-display">
                     <div class="profile-greeting">
-                        <span id="user-greeting">Chào mừng, Sinh viên!</span>
+                        <span id="user-greeting">Chào mừng bạn!</span>
                     </div>
                     <div class="profile-details">
-                        <small id="profile-details-text">Hoàn thiện hồ sơ để có trải nghiệm cá nhân hóa</small>
+                        <small id="profile-details-text">Hoàn thành thông tin để có trải nghiệm cá nhân hóa</small>
                     </div>
                 </div>
                 <button class="btn btn-outline btn-sm" onclick="toggleProfileEdit()">
-                    <i class="fas fa-edit"></i> Chỉnh sửa hồ sơ
+                    <i class="fas fa-edit"></i> Chỉnh Sửa
                 </button>
                 
                 <!-- Profile Edit Form (initially hidden) -->
                 <div id="profile-edit" class="profile-edit" style="display: none;">
                     <form id="profile-form">
                         <div class="form-group">
-                            <label>Họ và tên</label>
+                            <label>Tên</label>
                             <input type="text" id="profile-name" placeholder="Tên của bạn">
                         </div>
                         <div class="form-group">
-                            <label>Mã số sinh viên</label>
-                            <input type="text" id="profile-student-id" placeholder="Không bắt buộc">
+                            <label>Mã Sinh Viên</label>
+                            <input type="text" id="profile-student-id" placeholder="Mã sinh viên (không bắt buộc)">
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Ngành học</label>
+                                <label>Ngành Học</label>
                                 <select id="profile-major">
                                     <option value="Công nghệ Thông tin">Công nghệ Thông tin</option>
                                     <option value="Khoa học Máy tính">Khoa học Máy tính</option>
@@ -89,7 +97,7 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Năm học</label>
+                                <label>Năm Học</label>
                                 <select id="profile-year">
                                     <option value="Năm 1">Năm 1</option>
                                     <option value="Năm 2" selected>Năm 2</option>
@@ -101,7 +109,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Trình độ</label>
+                            <label>Trình Độ</label>
                             <select id="profile-level">
                                 <option value="Mới bắt đầu">Mới bắt đầu</option>
                                 <option value="Trung bình" selected>Trung bình</option>
@@ -110,7 +118,7 @@
                             </select>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary btn-sm">Lưu hồ sơ</button>
+                            <button type="submit" class="btn btn-primary btn-sm">Lưu Thông Tin</button>
                             <button type="button" class="btn btn-outline btn-sm" onclick="cancelProfileEdit()">Hủy</button>
                         </div>
                     </form>
@@ -119,37 +127,37 @@
 
             <!-- Settings Section -->
             <div class="settings-section">
-                <h3><i class="fas fa-cog"></i> Cài đặt</h3>
+                <h3><i class="fas fa-cog"></i> Cài Đặt</h3>
                 
                 <!-- Integrity Mode -->
                 <div class="setting-group">
-                    <label>Chế độ</label>
+                    <label>🛡️ Chế Độ Học Tập</label>
                     <select id="integrity-mode" class="form-select">
-                        <option value="normal">Bình thường - Hiển thị đầy đủ lời giải</option>
+                        <option value="normal">Bình thường - Đáp án đầy đủ</option>
                         <option value="academic" selected>Học thuật - Chỉ hướng dẫn</option>
                         <option value="exam">Thi cử - Gợi ý tối thiểu</option>
                     </select>
-                    <small class="help-text">Chọn chế độ phù hợp với ngữ cảnh học tập của bạn</small>
+                    <small class="help-text">Chọn chế độ phù hợp với bối cảnh học tập</small>
                 </div>
 
                 <!-- Language -->
                 <div class="setting-group">
-                    <label>Ngôn ngữ ưu tiên</label>
+                    <label>🌐 Ngôn Ngữ</label>
                     <select id="preferred-language" class="form-select">
                         <option value="Vietnamese" selected>Tiếng Việt</option>
-                        <option value="English">Tiếng Anh</option>
-                        <option value="Auto-detect">Tự động phát hiện</option>
+                        <option value="English">English</option>
+                        <option value="Auto-detect">Tự động</option>
                     </select>
                 </div>
             </div>
 
             <!-- Document Upload -->
             <div class="upload-section">
-                <h3><i class="fas fa-upload"></i> Tài liệu</h3>
+                <h3><i class="fas fa-upload"></i> Tài Liệu</h3>
                 <div class="upload-area" id="upload-area">
                     <i class="fas fa-file-upload"></i>
-                    <p>Kéo thả tập tin vào đây hoặc bấm để chọn</p>
-                    <small>Hỗ trợ: PDF, Markdown, Code files</small>
+                    <p>Kéo thả tài liệu hoặc nhấp để chọn</p>
+                    <small>Hỗ trợ PDF, Markdown, các file code</small>
                     <input type="file" id="file-input" multiple accept=".pdf,.md,.py,.java,.cpp,.c,.js,.html,.css">
                 </div>
                 <div class="upload-progress" id="upload-progress" style="display: none;">
@@ -161,26 +169,26 @@
                 
                 <!-- Processed Documents -->
                 <div class="documents-list" id="documents-list">
-                    <h4>Cơ sở kiến thức</h4>
+                    <h4>📚 Thư Viện Kiến Thức</h4>
                     <div id="documents-container">
-                        <p class="no-documents">Chưa có tài liệu nào được tải lên</p>
+                        <p class="no-documents">Chưa có tài liệu nào</p>
                     </div>
                 </div>
             </div>
 
             <!-- Learning Context -->
             <div class="context-section">
-                <h3><i class="fas fa-brain"></i> Ngữ cảnh học tập</h3>
+                <h3><i class="fas fa-brain"></i> Bối Cảnh Học Tập</h3>
                 
                 <div class="current-topic" id="current-topic" style="display: none;">
-                    <h4>Trọng tâm hiện tại</h4>
+                    <h4>🎯 Chủ Đề Hiện Tại</h4>
                     <div class="topic-info">
-                        <span id="topic-name">Chưa có chủ đề nào</span>
+                        <span id="topic-name">Chưa có chủ đề</span>
                     </div>
                 </div>
 
                 <div class="suggestions" id="suggestions" style="display: none;">
-                    <h4>Chủ đề gợi ý</h4>
+                    <h4>💡 Gợi Ý Chủ Đề</h4>
                     <ul id="suggestions-list"></ul>
                 </div>
             </div>
@@ -188,7 +196,7 @@
             <!-- Actions -->
             <div class="actions-section">
                 <button class="btn btn-danger btn-block" onclick="clearAllData()">
-                    <i class="fas fa-trash"></i> Xóa toàn bộ dữ liệu
+                    <i class="fas fa-trash"></i> Xóa Tất Cả Dữ Liệu
                 </button>
             </div>
         </aside>
@@ -206,14 +214,14 @@
                                     <i class="fas fa-robot"></i>
                                 </div>
                                 <div class="message-content">
-                                    <h3>👋 Chào mừng đến với Trợ Lý Ảo AI!</h3>
-                                    <p>Mình ở đây để giúp bạn trong các môn học CNTT như lập trình mạng, phát triển di động, và nhiều hơn nữa.</p>
-                                    <p><strong>Bắt đầu như thế nào:</strong></p>
+                                    <h3>👋 Chào mừng đến với Trợ Lý AI Thông Minh!</h3>
+                                    <p>Tôi ở đây để giúp bạn học các môn Công nghệ Thông tin như lập trình mạng, phát triển ứng dụng di động và nhiều hơn thế.</p>
+                                    <p><strong>Cách bắt đầu:</strong></p>
                                     <ul>
                                         <li>📚 Tải lên tài liệu học tập (PDF, ghi chú, file code)</li>
-                                        <li>👤 Hoàn thiện hồ sơ cá nhân để có trải nghiệm phù hợp</li>
-                                        <li>🛡️ Chọn chế độ trung thực thích hợp</li>
-                                        <li>❓ Đặt câu hỏi để nhận lời giải thích chi tiết kèm trích dẫn</li>
+                                        <li>👤 Hoàn thành thông tin cá nhân để có trải nghiệm cá nhân hóa</li>
+                                        <li>🛡️ Chọn chế độ học tập phù hợp</li>
+                                        <li>❓ Đặt câu hỏi để nhận giải thích chi tiết kèm nguồn tham khảo</li>
                                     </ul>
                                 </div>
                             </div>
@@ -227,7 +235,7 @@
                         <div class="input-group">
                             <textarea 
                                 id="question-input" 
-                                placeholder="Hỏi bất cứ điều gì về CNTT... (ví dụ: 'Machine Learning là gì?', 'Giải thích TCP vs UDP', 'Cách debug lỗi NullPointerException?')"
+                                placeholder="Hỏi tôi bất cứ điều gì về Công nghệ Thông tin... (VD: 'Machine Learning là gì?', 'Giải thích TCP vs UDP', 'Cách debug lỗi NullPointerException?')"
                                 rows="2"
                                 required
                             ></textarea>
@@ -241,13 +249,13 @@
                     <!-- Quick Actions -->
                     <div class="quick-actions">
                         <button type="button" class="btn btn-outline btn-sm" onclick="insertExample('theory')">
-                            <i class="fas fa-book"></i> Câu hỏi lý thuyết
+                            <i class="fas fa-book"></i> Câu Hỏi Lý Thuyết
                         </button>
                         <button type="button" class="btn btn-outline btn-sm" onclick="insertExample('debug')">
-                            <i class="fas fa-bug"></i> Hỗ trợ Debug
+                            <i class="fas fa-bug"></i> Trợ Giúp Debug
                         </button>
                         <button type="button" class="btn btn-outline btn-sm" onclick="insertExample('exercise')">
-                            <i class="fas fa-code"></i> Hướng dẫn Bài tập
+                            <i class="fas fa-code"></i> Hướng Dẫn Bài Tập
                         </button>
                     </div>
                 </div>
