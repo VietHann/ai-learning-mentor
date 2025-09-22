@@ -135,10 +135,11 @@ python -m apps.flask.web_app
 ### Điểm chuẩn Hiệu suất
 | Số liệu | Mục tiêu | Trạng thái hiện tại |
 |---------|----------|-------------------|
-| **Độ liên quan câu trả lời** | ≥ 0.80 | 🔄 Đang giám sát |
+| **Độ liên quan câu trả lời** | ≥ 0.80 | ✅ Đã đạt |
 | **Độ chính xác trích dẫn** | ≥ 0.85 | ✅ Đã đạt |
 | **Tuân thủ tính toàn vẹn** | ≥ 0.95 | ✅ Đã đạt |
 | **Thời gian phản hồi** | < 8s | ✅ Đã đạt |
+| **Cải tiến thời gian phản hồi** | < 4s | ✅ Đã đạt |
 
 ### Kiểm tra Liên tục
 ```bash

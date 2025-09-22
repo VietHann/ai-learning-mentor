@@ -23,7 +23,7 @@ from mentor_core.question_classifier import QuestionClassifier
 from mentor_core.citation_formatter import CitationFormatter
 
 # Import database models
-from models import db, bcrypt, User, ChatSession, UserDocument
+from .models import db, bcrypt, User, ChatSession, UserDocument
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app, origins="*", allow_headers="*", methods="*")
