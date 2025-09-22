@@ -1,2 +1,5 @@
 apps/streamlit/
 venv/
+apps/flask/__pycache__
+apps/flask/data
+apps/flask/runtime
